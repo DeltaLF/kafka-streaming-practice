@@ -23,6 +23,8 @@ public class GreetingDeserializer implements Deserializer<Greeting> {
             return objectMapper.readValue(data, Greeting.class);
         } catch (IOException e) {
             log.error("IOException : {}", e.getMessage(), e);
+            log.error("The expect produced message format should fit in Greeting class!");
+
             throw new RuntimeException(e);
         } catch (Exception e) {
             log.error("Exception : {}", e.getMessage(), e);
