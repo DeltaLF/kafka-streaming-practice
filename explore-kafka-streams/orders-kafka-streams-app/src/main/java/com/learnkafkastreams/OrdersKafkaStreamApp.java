@@ -27,7 +27,8 @@ public class OrdersKafkaStreamApp {
         config.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest"); // read only the new messages
 
-        createTopics(config, List.of(OrdersTopology.ORDERS));
+        createTopics(config,
+                List.of(OrdersTopology.ORDERS, OrdersTopology.GENERAL_ORDERS, OrdersTopology.RESTAURANT_ORDERS));
 
         // Create an instance of KafkaStreams
         var kafkaStreams = new KafkaStreams(topology, config);
