@@ -11,6 +11,7 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
 
+import com.learnkafkastreams.exceptionhandler.StreamsDeserializationExceptionHandler;
 import com.learnkafkastreams.topology.GreetingsTopology;
 
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,11 @@ public class GreetingsStreamApp {
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
+        properties.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_DOC,
+                StreamsDeserializationExceptionHandler.class);
+        // keep app alive even if error occurs in streaming deserialization
+
+        properties.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, "2");
 
         createTopics(properties, List.of(GreetingsTopology.GREETINGS, GreetingsTopology.GREETINGS_UPPERCASE,
                 GreetingsTopology.GREETINGSII));
