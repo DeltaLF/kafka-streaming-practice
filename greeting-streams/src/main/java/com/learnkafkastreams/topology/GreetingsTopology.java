@@ -34,6 +34,19 @@ public class GreetingsTopology {
 
         mergedStream.print(Printed.<String, Greeting>toSysOut().withLabel("mergedStream"));
 
+        // var modifiedStream = streamOperator(mergedStream);
+
+        var modifiedStream = streamOperatorError(mergedStream);
+
+        mergedStream.print(Printed.<String, Greeting>toSysOut().withLabel("modifiedStream"));
+
+        modifiedStream.to(GREETINGS_UPPERCASE,
+                Produced.with(Serdes.String(), SerdesFactory.greetingSerdesUsingGenerics()));
+
+        return streamsBuilder.build();
+    }
+
+    private static KStream<String, Greeting> streamOperator(KStream<String, Greeting> mergedStream) {
         var modifiedStream = mergedStream
                 .peek((key, value) -> {
                     log.info("# peek stream key:{}, value:{}", key, value);
@@ -50,13 +63,29 @@ public class GreetingsTopology {
         // .map(val -> KeyValue.pair(key, val.toUpperCase()))
         // .collect(Collectors.toList());
         // });
+        return modifiedStream;
+    }
 
-        mergedStream.print(Printed.<String, Greeting>toSysOut().withLabel("modifiedStream"));
+    private static KStream<String, Greeting> streamOperatorError(KStream<String, Greeting> mergedStream) {
 
-        modifiedStream.to(GREETINGS_UPPERCASE,
-                Produced.with(Serdes.String(), SerdesFactory.greetingSerdesUsingGenerics()));
+        return mergedStream
+                .peek((key, value) -> {
+                    log.info("# peek stream key:{}, value:{}", key, value);
+                })
+                .mapValues(
+                        (readOnlyKey, value) -> {
+                            if (value.getMessage().equals("Transient Error")) {
+                                try {
+                                    throw new IllegalStateException(value.getMessage());
+                                } catch (Exception e) {
+                                    log.error("Exception in exploreErrors : {}", e.getMessage(), e);
+                                    return null;
+                                }
+                            }
+                            return new Greeting(value.getMessage().toUpperCase(), value.getTimeStamp());
+                        })
+                .filter((key, value) -> key != null && value != null);
 
-        return streamsBuilder.build();
     }
 
     private static KStream<String, String> getStringGreetingKStream(StreamsBuilder streamsBuilder) {
