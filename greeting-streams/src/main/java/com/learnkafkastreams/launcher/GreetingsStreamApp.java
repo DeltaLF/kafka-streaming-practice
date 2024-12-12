@@ -12,6 +12,7 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
 
 import com.learnkafkastreams.exceptionhandler.StreamsDeserializationExceptionHandler;
+import com.learnkafkastreams.exceptionhandler.StreamsProcessorCustomErrorHandler;
 import com.learnkafkastreams.topology.GreetingsTopology;
 
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,9 @@ public class GreetingsStreamApp {
                 GreetingsTopology.GREETINGSII));
         var greetingsTopoloy = GreetingsTopology.buildTopology();
         var kafkaStreams = new KafkaStreams(greetingsTopoloy, properties);
+
+        kafkaStreams.setUncaughtExceptionHandler(new StreamsProcessorCustomErrorHandler());
+        // use custom error handler
 
         try {
             kafkaStreams.start();
